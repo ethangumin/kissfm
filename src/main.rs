@@ -7,12 +7,11 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders},
     Terminal,
 };
 
-mod file_navigator;
 mod helpful_commands;
-mod working_directory;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // setup terminal
@@ -42,29 +41,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
-    terminal
-        .draw(|f| {
-            let layout = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Percentage(12),
-                        Constraint::Percentage(10),
-                        Constraint::Percentage(78),
-                    ]
-                    .as_ref(),
-                )
-                .split(f.size());
+    terminal.draw(|f| {
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(
+                [
+                    Constraint::Percentage(12),
+                    Constraint::Percentage(10),
+                    Constraint::Percentage(78),
+                ]
+                .as_ref(),
+            )
+            .split(f.size());
 
-            let helpful_commands_widget = helpful_commands::widget();
-            let working_directory_widget = working_directory::widget();
-            let navigator_window_widget = file_navigator::widget();
+        let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
 
-            f.render_widget(helpful_commands_widget, layout[0]);
-            f.render_widget(working_directory_widget, layout[1]);
-            f.render_widget(navigator_window_widget, layout[2]);
-        })
-        .unwrap();
+        for (idx, title) in section_titles.iter().enumerate() {
+            let block = Block::default()
+                .title(title.to_string())
+                .borders(Borders::ALL);
+            f.render_widget(block, layout[idx]);
+        }
+    })?;
 
     helpful_commands::close_tui();
 
