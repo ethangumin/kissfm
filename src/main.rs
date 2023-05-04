@@ -13,7 +13,13 @@ use tui::{
 
 mod helpful_commands;
 
+// Files
+mod settings; 
+
 fn main() -> Result<(), Box<dyn Error>> {
+    // print user conf
+    settings::get_conf();
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
