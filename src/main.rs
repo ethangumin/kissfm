@@ -25,6 +25,9 @@ use tui::{
 };
 use unicode_width::UnicodeWidthStr;
 
+// Files
+mod settings; 
+
 enum InputMode {
     Normal,
     Editing,
@@ -51,6 +54,9 @@ impl Default for App {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // print user conf
+    settings::get_conf();
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();

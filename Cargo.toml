@@ -1,5 +1,5 @@
 [package]
-name = "kfs"
+name = "kfm"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,3 +9,5 @@ edition = "2021"
 tui = "0.19"
 crossterm = "0.25"
 unicode-width = "0.1"
+config = "0.13.1"
+dirs = "4.0"
