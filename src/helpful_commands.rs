@@ -1,15 +1,32 @@
-use crossterm::event::{self, Event, KeyCode};
+// iterate on enum, handle_command, execute_command as new commands are added //
 
-// temporary function to close app...eventually have an enum based on keys a user presses
-pub fn close_tui() {
+use crossterm::event::{Event, KeyCode, KeyEvent};
+use std::io;
+
+enum HelpfulCommands {
+    Quit,
+}
+
+pub fn handle_command() -> io::Result<()> {
     loop {
-        if let Event::Key(key_event) = event::read().unwrap() {
-            match key_event.code {
-                KeyCode::Char('q') => {
-                    break;
-                }
-                _ => {}
+        let event = crossterm::event::read()?;
+        match event {
+            Event::Key(KeyEvent {
+                code, modifiers, ..
+            }) => {
+                let command = match (code, modifiers) {
+                    (KeyCode::Char('q'), _) => HelpfulCommands::Quit,
+                    _ => continue,
+                };
+                return execute_command(command);
             }
+            _ => continue,
         }
+    }
+}
+
+fn execute_command(command: HelpfulCommands) -> io::Result<()> {
+    match command {
+        HelpfulCommands::Quit => return Ok(()),
     }
 }

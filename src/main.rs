@@ -14,7 +14,7 @@ use tui::{
 mod helpful_commands;
 
 // Files
-mod settings; 
+mod settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // print user conf
@@ -70,7 +70,9 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
         }
     })?;
 
-    helpful_commands::close_tui();
+    if let Err(err) = helpful_commands::handle_command() {
+        println!("Error handling command: {}", err);
+    }
 
     Ok(())
 }
