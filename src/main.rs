@@ -52,9 +52,9 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
             .direction(Direction::Vertical)
             .constraints(
                 [
-                    Constraint::Percentage(12),
-                    Constraint::Percentage(10),
-                    Constraint::Percentage(78),
+                    Constraint::Length(3),
+                    Constraint::Length(3),
+                    Constraint::Min(0),
                 ]
                 .as_ref(),
             )
@@ -66,7 +66,17 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
             let block = Block::default()
                 .title(title.to_string())
                 .borders(Borders::ALL);
-            f.render_widget(block, layout[idx]);
+
+            // replace '_' with content for 'Working Directory' and 'Navigator Window'
+            match idx {
+                0 => {
+                    let helpful_commands_widget = helpful_commands::generate_content().block(block);
+                    f.render_widget(helpful_commands_widget, layout[idx]);
+                }
+                _ => {
+                    f.render_widget(block, layout[idx]);
+                }
+            }
         }
     })?;
 

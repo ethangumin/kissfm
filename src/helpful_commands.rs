@@ -1,7 +1,12 @@
-// iterate on enum, handle_command, execute_command as new commands are added //
+// iterate on enum/functions in this file as new helpful commands are added
 
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use std::io;
+use tui::{
+    style::{Color, Style},
+    text::{Span, Spans},
+    widgets::Paragraph,
+};
 
 enum HelpfulCommands {
     Quit,
@@ -29,4 +34,17 @@ fn execute_command(command: HelpfulCommands) -> io::Result<()> {
     match command {
         HelpfulCommands::Quit => return Ok(()),
     }
+}
+
+pub fn generate_content() -> Paragraph<'static> {
+    let commands = vec!["q"];
+    let titles = vec![":quit"];
+
+    let content = Spans::from(vec![
+        Span::styled(commands[0], Style::default().fg(Color::Cyan)),
+        Span::raw(titles[0].to_string()),
+        Span::raw(" "),
+    ]);
+
+    return Paragraph::new(content);
 }
