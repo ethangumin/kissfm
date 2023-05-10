@@ -13,6 +13,7 @@ use tui::{
 
 mod helpful_commands;
 mod working_directory;
+mod commands;
 
 // Files
 mod settings;
@@ -20,6 +21,8 @@ mod settings;
 fn main() -> Result<(), Box<dyn Error>> {
     // print user conf
     settings::get_conf();
+    println!("{:?}", commands::ls("./"));
+    println!("{:?}", commands::ls_arg("./", "-a"));
 
     // setup terminal
     enable_raw_mode()?;
