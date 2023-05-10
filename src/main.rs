@@ -12,6 +12,7 @@ use tui::{
 };
 
 mod helpful_commands;
+mod working_directory;
 
 // Files
 mod settings;
@@ -67,11 +68,16 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
                 .title(title.to_string())
                 .borders(Borders::ALL);
 
-            // replace '_' with content for 'Working Directory' and 'Navigator Window'
+            // replace '_' with content for 'Navigator Window'
             match idx {
                 0 => {
                     let helpful_commands_widget = helpful_commands::generate_content().block(block);
                     f.render_widget(helpful_commands_widget, layout[idx]);
+                }
+                1 => {
+                    let working_directory_widget =
+                        working_directory::generate_content().block(block);
+                    f.render_widget(working_directory_widget, layout[idx]);
                 }
                 _ => {
                     f.render_widget(block, layout[idx]);
