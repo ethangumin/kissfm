@@ -22,7 +22,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // print user conf
     settings::get_conf();
     println!("{:?}", commands::ls("./"));
-    println!("{:?}", commands::ls_arg("./", "-a"));
+    println!("{:?}", commands::ls("./ -a"));
+    println!("{:?}", commands::ls("./ -a -l"));
 
     // setup terminal
     enable_raw_mode()?;
