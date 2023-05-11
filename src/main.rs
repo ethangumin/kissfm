@@ -11,10 +11,9 @@ use tui::{
     Terminal,
 };
 
-mod commands;
 mod helpful_commands;
-mod navigator_window;
 mod working_directory;
+mod commands;
 
 // Files
 mod settings;
@@ -73,6 +72,7 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
                 .title(title.to_string())
                 .borders(Borders::ALL);
 
+            // replace '_' with content for 'Navigator Window'
             match idx {
                 0 => {
                     let helpful_commands_widget = helpful_commands::generate_content().block(block);
@@ -84,10 +84,7 @@ fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
                     f.render_widget(working_directory_widget, layout[idx]);
                 }
                 _ => {
-                    let files = commands::ls("./ -a");
-                    let navigator_window_widget =
-                        navigator_window::generate_content(&files).block(block);
-                    f.render_widget(navigator_window_widget, layout[idx]);
+                    f.render_widget(block, layout[idx]);
                 }
             }
         }
