@@ -1,19 +1,21 @@
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use state::App;
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders},
-    Terminal,
+    Frame, Terminal,
 };
 
-mod helpful_commands;
-mod working_directory;
 mod commands;
+mod helpful_commands;
+mod state;
+mod working_directory;
 
 // Files
 mod settings;
@@ -32,8 +34,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    // create ui
-    let res = ui(&mut terminal);
+    // create app and run it
+    let app = App::new();
+    let res = run_app(&mut terminal, app);
 
     // restore terminal
     disable_raw_mode()?;
@@ -51,48 +54,57 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn ui<B: Backend>(terminal: &mut Terminal<B>) -> io::Result<()> {
-    terminal.draw(|f| {
-        let layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(
-                [
-                    Constraint::Length(3),
-                    Constraint::Length(3),
-                    Constraint::Min(0),
-                ]
-                .as_ref(),
-            )
-            .split(f.size());
+fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
+    loop {
+        terminal.draw(|f| ui(f, &mut app))?;
 
-        let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
-
-        for (idx, title) in section_titles.iter().enumerate() {
-            let block = Block::default()
-                .title(title.to_string())
-                .borders(Borders::ALL);
-
-            // replace '_' with content for 'Navigator Window'
-            match idx {
-                0 => {
-                    let helpful_commands_widget = helpful_commands::generate_content().block(block);
-                    f.render_widget(helpful_commands_widget, layout[idx]);
-                }
-                1 => {
-                    let working_directory_widget =
-                        working_directory::generate_content().block(block);
-                    f.render_widget(working_directory_widget, layout[idx]);
-                }
-                _ => {
-                    f.render_widget(block, layout[idx]);
-                }
+        if let Event::Key(key) = event::read()? {
+            match key.code {
+                KeyCode::Char('q') => return Ok(()),
+                _ => {}
             }
         }
-    })?;
-
-    if let Err(err) = helpful_commands::handle_command() {
-        println!("Error handling command: {}", err);
     }
+}
 
-    Ok(())
+fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+    // use function to populate Navigator Window
+    println!("{:?}", app.current_files());
+
+    let layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            [
+                Constraint::Length(3),
+                Constraint::Length(3),
+                Constraint::Min(0),
+            ]
+            .as_ref(),
+        )
+        .split(f.size());
+
+    let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
+
+    for (idx, title) in section_titles.iter().enumerate() {
+        let block = Block::default()
+            .title(title.to_string())
+            .borders(Borders::ALL);
+
+        // replace '_' with content for 'Navigator Window'
+        match idx {
+            0 => {
+                let helpful_commands_widget = helpful_commands::generate_content().block(block);
+                f.render_widget(helpful_commands_widget, layout[idx]);
+            }
+            1 => {
+                let working_directory_widget = working_directory::generate_content().block(block);
+                // should be render_stateful_widget
+                f.render_widget(working_directory_widget, layout[idx]);
+            }
+            _ => {
+                // should be render_stateful_widget
+                f.render_widget(block, layout[idx]);
+            }
+        }
+    }
 }
