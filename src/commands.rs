@@ -28,9 +28,5 @@ pub fn ls(arg: &str) -> Vec<String> {
 }
 
 pub fn enter_file(path: String) -> () {
-    println!("{}", path);
-    Command::new("nvim")
-        .arg(path)
-        .output()
-        .expect("failed to enter file");
+    println!("current path: {}", path);
 }
