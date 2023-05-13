@@ -84,7 +84,22 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
 
-    let state = app.current_files();
+    let mut state = app.current_files();
+
+    // sort by dir, then alphabetically
+    state.sort_by(|a, b| {
+        let a_last_char_slash = a.chars().last() == Some('/');
+        let b_last_char_slash = b.chars().last() == Some('/');
+
+        if a_last_char_slash && !b_last_char_slash {
+            std::cmp::Ordering::Less
+        } else if !a_last_char_slash && b_last_char_slash {
+            std::cmp::Ordering::Greater
+        } else {
+            a.cmp(b)
+        }
+    });
+
     let nav_window_items: Vec<ListItem> = state
         .iter()
         .map(|file| {
