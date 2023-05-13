@@ -118,7 +118,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                     return ListItem::new(file.as_str());
                 }
             }
-            return ListItem::new(file.as_str()).style(Style::default().fg(Color::LightCyan));
+            panic!("file/directory must have a non-empty name");
         })
         .collect();
 
@@ -129,7 +129,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .title(title.to_string())
             .borders(Borders::ALL);
 
-        // replace '_' with content for 'Navigator Window'
         match idx {
             0 => {
                 let helpful_commands_widget = helpful_commands::generate_content().block(block);
