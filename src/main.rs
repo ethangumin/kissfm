@@ -63,6 +63,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => return Ok(()),
+                KeyCode::Char('j') => app.items.next(),
+                KeyCode::Char('k') => app.items.previous(),
                 _ => {}
             }
         }
@@ -122,7 +124,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         })
         .collect();
 
-    let nav_window_items = List::new(nav_window_items);
+    let nav_window_items = List::new(nav_window_items).highlight_symbol(">> ");
 
     for (idx, title) in section_titles.iter().enumerate() {
         let block = Block::default()
