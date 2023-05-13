@@ -2,8 +2,8 @@ use tui::widgets::ListState;
 
 use crate::commands::ls;
 
-struct StatefulList<T> {
-    state: ListState,
+pub struct StatefulList<T> {
+    pub state: ListState,
     items: Vec<T>,
 }
 
@@ -17,13 +17,13 @@ impl<T> StatefulList<T> {
 }
 
 pub struct App {
-    items: StatefulList<String>,
+    pub items: StatefulList<String>,
 }
 
 impl App {
     pub fn new() -> App {
         App {
-            items: StatefulList::with_items(ls("./")),
+            items: StatefulList::with_items(ls("./ -a")),
         }
     }
 

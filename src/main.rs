@@ -8,7 +8,9 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders},
+    style::{Color, Style},
+    text::{Span, Spans},
+    widgets::{Block, Borders, List, ListItem},
     Frame, Terminal,
 };
 
@@ -68,9 +70,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
-    // use function to populate Navigator Window
-    println!("{:?}", app.current_files());
-
     let layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
@@ -84,6 +83,31 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
+
+    let state = app.current_files();
+    let nav_window_items: Vec<ListItem> = state
+        .iter()
+        .map(|file| {
+            if let Some(last_char) = file.chars().last() {
+                if last_char == '/' {
+                    let prefix: String = file.chars().take(file.len() - 1).collect();
+
+                    let prefix_as_span =
+                        Span::styled(prefix, Style::default().fg(Color::LightBlue));
+                    let suffix_as_span = Span::styled("/", Style::default().fg(Color::LightRed));
+
+                    let formatted_dir = Spans::from(vec![prefix_as_span, suffix_as_span]);
+
+                    return ListItem::new(formatted_dir);
+                } else {
+                    return ListItem::new(file.as_str());
+                }
+            }
+            return ListItem::new(file.as_str()).style(Style::default().fg(Color::LightCyan));
+        })
+        .collect();
+
+    let nav_window_items = List::new(nav_window_items);
 
     for (idx, title) in section_titles.iter().enumerate() {
         let block = Block::default()
@@ -102,8 +126,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 f.render_widget(working_directory_widget, layout[idx]);
             }
             _ => {
-                // should be render_stateful_widget
-                f.render_widget(block, layout[idx]);
+                f.render_stateful_widget(
+                    nav_window_items.clone().block(block),
+                    layout[idx],
+                    &mut app.items.state,
+                );
             }
         }
     }
