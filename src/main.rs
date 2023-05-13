@@ -65,6 +65,15 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Char('q') => return Ok(()),
                 KeyCode::Char('j') => app.items.next(),
                 KeyCode::Char('k') => app.items.previous(),
+                KeyCode::Enter => {
+                    let current_path = working_directory::get_working_dir();
+                    if let Some(selected_file) = app.items.get_selected() {
+                        let new_path = current_path + "/" + selected_file;
+                        commands::enter_file(new_path);
+                    } else {
+                        println!("No file/directory currently selected");
+                    }
+                }
                 _ => {}
             }
         }
@@ -85,22 +94,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
-
-    let mut state = app.current_files();
-
-    // sort by dir, then alphabetically
-    state.sort_by(|a, b| {
-        let a_last_char_slash = a.chars().last() == Some('/');
-        let b_last_char_slash = b.chars().last() == Some('/');
-
-        if a_last_char_slash && !b_last_char_slash {
-            std::cmp::Ordering::Less
-        } else if !a_last_char_slash && b_last_char_slash {
-            std::cmp::Ordering::Greater
-        } else {
-            a.cmp(b)
-        }
-    });
+    let state = app.current_files();
 
     let nav_window_items: Vec<ListItem> = state
         .iter()

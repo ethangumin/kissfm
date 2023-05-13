@@ -10,7 +10,7 @@ pub struct StatefulList<T> {
 impl<T> StatefulList<T> {
     fn with_items(items: Vec<T>) -> StatefulList<T> {
         let mut state = ListState::default();
-        state.select(Some(1)); // initialize state with './' selected
+        state.select(Some(0)); // initialize state with '../' selected
 
         StatefulList { state, items }
     }
@@ -24,7 +24,7 @@ impl<T> StatefulList<T> {
                     i + 1
                 }
             }
-            None => 1, // default selected as './'
+            None => 0, // default selected as '../'
         };
         self.state.select(Some(i));
     }
@@ -38,9 +38,17 @@ impl<T> StatefulList<T> {
                     i - 1
                 }
             }
-            None => 1, // default selected as './'
+            None => 0, // default selected as '../'
         };
         self.state.select(Some(i));
+    }
+
+    pub fn get_selected(&mut self) -> Option<&T> {
+        if let Some(selected_index) = self.state.selected() {
+            self.items.get(selected_index)
+        } else {
+            None
+        }
     }
 }
 
@@ -50,8 +58,24 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
+        let mut items = ls("./ -a");
+
+        // sort by dir -> file, then by name
+        items.sort_by(|a, b| {
+            let a_last_char_slash = a.chars().last() == Some('/');
+            let b_last_char_slash = b.chars().last() == Some('/');
+
+            if a_last_char_slash && !b_last_char_slash {
+                std::cmp::Ordering::Less
+            } else if !a_last_char_slash && b_last_char_slash {
+                std::cmp::Ordering::Greater
+            } else {
+                a.cmp(b)
+            }
+        });
+
         App {
-            items: StatefulList::with_items(ls("./ -a")),
+            items: StatefulList::with_items(items),
         }
     }
 
