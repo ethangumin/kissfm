@@ -69,7 +69,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         let new_path = current_path + "/" + selected_file;
 
                         if utils::is_dir(selected_file) {
-                            commands::enter_dir(new_path).expect("failed to enter directory");
+                            commands::enter_dir(new_path, &mut app)
+                                .expect("failed to enter directory");
                         } else {
                             commands::enter_file(new_path).expect("failed to enter file");
                         }

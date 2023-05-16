@@ -79,6 +79,26 @@ impl App {
         }
     }
 
+    pub fn new_cwd(&mut self) {
+        let mut items = ls("./ -a");
+
+        // sort by dir -> file, then by name
+        items.sort_by(|a, b| {
+            let a_last_char_slash = a.chars().last() == Some('/');
+            let b_last_char_slash = b.chars().last() == Some('/');
+
+            if a_last_char_slash && !b_last_char_slash {
+                std::cmp::Ordering::Less
+            } else if !a_last_char_slash && b_last_char_slash {
+                std::cmp::Ordering::Greater
+            } else {
+                a.cmp(b)
+            }
+        });
+
+        self.items = StatefulList::with_items(items);
+    }
+
     pub fn current_files(&self) -> Vec<String> {
         return self.items.items.clone();
     }

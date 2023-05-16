@@ -1,13 +1,12 @@
 use std::{
     collections::VecDeque,
-    env,
-    io,
+    env, io,
     process::{exit, Command},
 };
 
 use crossterm::terminal::disable_raw_mode;
 
-use crate::settings;
+use crate::{settings, state::App};
 
 // takes a string consisting of
 // "dir args..."
@@ -36,9 +35,12 @@ pub fn ls(arg: &str) -> Vec<String> {
     return res;
 }
 
-pub fn enter_dir(path: String) -> io::Result<()> {
+pub fn enter_dir(path: String, app: &mut App) -> io::Result<()> {
     return match env::set_current_dir(path) {
-        Ok(_) => Ok(()),
+        Ok(_) => {
+            app.new_cwd();
+            return Ok(());
+        }
         Err(e) => Err(e),
     };
 }
