@@ -58,25 +58,27 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        let mut items = ls("./ -a");
+        // let mut items = ls("./ -a");
 
-        // sort by dir -> file, then by name
-        items.sort_by(|a, b| {
-            let a_last_char_slash = a.chars().last() == Some('/');
-            let b_last_char_slash = b.chars().last() == Some('/');
+        // // sort by dir -> file, then by name
+        // items.sort_by(|a, b| {
+            // let a_last_char_slash = a.chars().last() == Some('/');
+            // let b_last_char_slash = b.chars().last() == Some('/');
 
-            if a_last_char_slash && !b_last_char_slash {
-                std::cmp::Ordering::Less
-            } else if !a_last_char_slash && b_last_char_slash {
-                std::cmp::Ordering::Greater
-            } else {
-                a.cmp(b)
-            }
-        });
+            // if a_last_char_slash && !b_last_char_slash {
+                // std::cmp::Ordering::Less
+            // } else if !a_last_char_slash && b_last_char_slash {
+                // std::cmp::Ordering::Greater
+            // } else {
+                // a.cmp(b)
+            // }
+        // });
 
-        App {
-            items: StatefulList::with_items(items),
-        }
+        let mut a = App {
+            items: StatefulList::with_items(vec![])
+        };
+        a.new_cwd();
+        return a
     }
 
     pub fn new_cwd(&mut self) {
