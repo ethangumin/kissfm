@@ -4,6 +4,10 @@ use std::{
     process::{exit, Command},
 };
 
+use crossterm::terminal::disable_raw_mode;
+
+use crate::settings;
+
 // takes a string consisting of
 // "dir args..."
 // splits on whitespace and uses any extra args after the dir
@@ -32,9 +36,17 @@ pub fn ls(arg: &str) -> Vec<String> {
 }
 
 pub fn enter_file(path: String) -> io::Result<()> {
-    Command::new("nvim")
+    let config = settings::get_conf();
+    // default editor to vim
+    let default_editor = String::from("vim");
+    // checks for "editor" key in config and opens file in its value
+    let editor = config.get("editor").unwrap_or(&default_editor);
+
+    Command::new(editor)
         .arg(path)
         .status()
         .expect("failed to open editor");
+
+    disable_raw_mode()?;
     exit(0);
 }

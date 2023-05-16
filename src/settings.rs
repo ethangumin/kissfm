@@ -3,7 +3,7 @@ use dirs;
 use std::collections::HashMap;
 use std::path::Path;
 
-pub fn get_conf() {
+pub fn get_conf() -> HashMap<String, String> {
     let home = match dirs::home_dir() {
         None => panic!("no home dir found"),
         Some(h) => h,
@@ -18,5 +18,5 @@ pub fn get_conf() {
         .try_deserialize::<HashMap<String, String>>()
         .unwrap();
 
-    println!("{:?}", settings);
+    return settings;
 }
