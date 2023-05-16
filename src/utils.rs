@@ -7,3 +7,15 @@ pub fn get_working_dir() -> std::string::String {
         panic!("Failed to determine the current directory.")
     }
 }
+
+pub fn is_dir(possible_dir: &str) -> bool {
+    if let Some(last_char) = possible_dir.chars().last() {
+        if last_char == '/' {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    return false;
+}

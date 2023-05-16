@@ -67,8 +67,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
-                        // return commands::enter_dir(new_path);
-                        commands::enter_dir(new_path);
+
+                        if utils::is_dir(selected_file) {
+                            commands::enter_dir(new_path).expect("failed to enter directory");
+                        } else {
+                            commands::enter_file(new_path).expect("failed to enter file");
+                        }
                     } else {
                         println!("No file/directory currently selected");
                     }
