@@ -1,10 +1,17 @@
 use tui::{
     style::{Color, Style},
     text::{Span, Spans},
-    widgets::{List, ListItem},
+    widgets::{Block, Borders, List, ListItem},
 };
 
+use crate::utils;
+
 pub fn generate_content(files: &Vec<String>) -> List {
+    let title = Span::styled(
+        utils::get_working_dir(),
+        Style::default().fg(Color::LightCyan),
+    );
+
     let nav_window_items: Vec<ListItem> = files
         .iter()
         .map(|file| {
@@ -27,5 +34,7 @@ pub fn generate_content(files: &Vec<String>) -> List {
         })
         .collect();
 
-    return List::new(nav_window_items).highlight_symbol(">> ");
+    return List::new(nav_window_items)
+        .highlight_symbol(">> ")
+        .block(Block::default().title(title).borders(Borders::ALL));
 }

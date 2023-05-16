@@ -1,7 +1,7 @@
 use tui::{
     style::{Color, Style},
     text::{Span, Spans},
-    widgets::Paragraph,
+    widgets::{Block, Borders, Paragraph},
 };
 
 pub fn generate_content() -> Paragraph<'static> {
@@ -14,5 +14,6 @@ pub fn generate_content() -> Paragraph<'static> {
         Span::raw(" "),
     ]);
 
-    return Paragraph::new(content);
+    return Paragraph::new(content)
+        .block(Block::default().title("Quick Help").borders(Borders::ALL));
 }

@@ -8,15 +8,14 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders},
     Frame, Terminal,
 };
 
 mod commands;
-mod helpful_commands;
 mod navigation_window;
+mod quick_help;
 mod state;
-mod working_directory;
+mod utils;
 
 // Files
 mod settings;
@@ -65,7 +64,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Char('j') => app.items.next(),
                 KeyCode::Char('k') => app.items.previous(),
                 KeyCode::Enter => {
-                    let current_path = working_directory::get_working_dir();
+                    let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
                         return commands::enter_file(new_path);
@@ -82,43 +81,15 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Length(3),
-                Constraint::Length(3),
-                Constraint::Min(0),
-            ]
-            .as_ref(),
-        )
+        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(f.size());
 
-    let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
+    // create quick help widget
+    let quick_help_widget = quick_help::generate_content();
+    f.render_widget(quick_help_widget, layout[0]);
 
-    for (idx, title) in section_titles.iter().enumerate() {
-        let block = Block::default()
-            .title(title.to_string())
-            .borders(Borders::ALL);
-
-        match idx {
-            0 => {
-                let helpful_commands_widget = helpful_commands::generate_content().block(block);
-                f.render_widget(helpful_commands_widget, layout[idx]);
-            }
-            1 => {
-                let working_directory_widget = working_directory::generate_content().block(block);
-                // should be render_stateful_widget
-                f.render_widget(working_directory_widget, layout[idx]);
-            }
-            _ => {
-                let state = app.current_files();
-                let nav_window_items = navigation_window::generate_content(&state);
-
-                f.render_stateful_widget(
-                    nav_window_items.block(block),
-                    layout[idx],
-                    &mut app.items.state,
-                );
-            }
-        }
-    }
+    // create navigation window widget
+    let state = app.current_files();
+    let nav_window_widget = navigation_window::generate_content(&state);
+    f.render_stateful_widget(nav_window_widget, layout[1], &mut app.items.state);
 }
