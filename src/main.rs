@@ -8,14 +8,13 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    style::{Color, Style},
-    text::{Span, Spans},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders},
     Frame, Terminal,
 };
 
 mod commands;
 mod helpful_commands;
+mod navigation_window;
 mod state;
 mod working_directory;
 
@@ -69,7 +68,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     let current_path = working_directory::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
-                        commands::enter_file(new_path);
+                        return commands::enter_file(new_path);
                     } else {
                         println!("No file/directory currently selected");
                     }
@@ -94,31 +93,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     let section_titles = ["Helpful Commands", "Working Directory", "Navigator Window"];
-    let state = app.current_files();
-
-    let nav_window_items: Vec<ListItem> = state
-        .iter()
-        .map(|file| {
-            if let Some(last_char) = file.chars().last() {
-                if last_char == '/' {
-                    let prefix: String = file.chars().take(file.len() - 1).collect();
-
-                    let prefix_as_span =
-                        Span::styled(prefix, Style::default().fg(Color::LightBlue));
-                    let suffix_as_span = Span::styled("/", Style::default().fg(Color::LightRed));
-
-                    let formatted_dir = Spans::from(vec![prefix_as_span, suffix_as_span]);
-
-                    return ListItem::new(formatted_dir);
-                } else {
-                    return ListItem::new(file.as_str());
-                }
-            }
-            panic!("file/directory must have a non-empty name");
-        })
-        .collect();
-
-    let nav_window_items = List::new(nav_window_items).highlight_symbol(">> ");
 
     for (idx, title) in section_titles.iter().enumerate() {
         let block = Block::default()
@@ -136,8 +110,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
                 f.render_widget(working_directory_widget, layout[idx]);
             }
             _ => {
+                let state = app.current_files();
+                let nav_window_items = navigation_window::generate_content(&state);
+
                 f.render_stateful_widget(
-                    nav_window_items.clone().block(block),
+                    nav_window_items.block(block),
                     layout[idx],
                     &mut app.items.state,
                 );

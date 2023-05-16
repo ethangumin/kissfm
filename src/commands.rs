@@ -1,4 +1,8 @@
-use std::{collections::VecDeque, process::Command};
+use std::{
+    collections::VecDeque,
+    io,
+    process::{exit, Command},
+};
 
 // takes a string consisting of
 // "dir args..."
@@ -27,6 +31,10 @@ pub fn ls(arg: &str) -> Vec<String> {
     return res;
 }
 
-pub fn enter_file(path: String) -> () {
-    println!("current path: {}", path);
+pub fn enter_file(path: String) -> io::Result<()> {
+    Command::new("nvim")
+        .arg(path)
+        .status()
+        .expect("failed to open editor");
+    exit(0);
 }
