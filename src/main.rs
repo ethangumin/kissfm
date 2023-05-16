@@ -54,7 +54,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
+fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App,) -> io::Result<()> {
+    let mut hide = true;
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
@@ -63,13 +64,17 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 KeyCode::Char('q') => return Ok(()),
                 KeyCode::Char('j') => app.items.next(),
                 KeyCode::Char('k') => app.items.previous(),
+                KeyCode::Char('o') => {
+                    hide = !hide;
+                    app.new_cwd("./", hide)
+                },
                 KeyCode::Enter => {
                     let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
 
                         if utils::is_dir(selected_file) {
-                            commands::enter_dir(new_path, &mut app)
+                            commands::enter_dir(new_path, &mut app, "./")
                                 .expect("failed to enter directory");
                         } else {
                             commands::enter_file(new_path).expect("failed to enter file");

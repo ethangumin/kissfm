@@ -77,12 +77,21 @@ impl App {
         let mut a = App {
             items: StatefulList::with_items(vec![])
         };
-        a.new_cwd();
+        a.new_cwd("./", true);
         return a
     }
 
-    pub fn new_cwd(&mut self) {
-        let mut items = ls("./ -a");
+    pub fn new_cwd(&mut self, args: &str, hide: bool) {
+        let files = ls(args);
+        let raw_items: Vec<&str> = files.iter().map(|s| s.as_str()).collect();
+        let mut items: Vec<String>;
+        if hide {
+            items = raw_items.iter().filter(|&&e| {
+                !e.starts_with(".") || e == "./" || "../" == e
+            }).map(|&e| e.to_string()).collect();
+        } else {
+            items = raw_items.iter().map(|&e| e.to_string()).collect();
+        }
 
         // sort by dir -> file, then by name
         items.sort_by(|a, b| {

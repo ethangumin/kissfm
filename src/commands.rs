@@ -13,15 +13,15 @@ use crate::{settings, state::App};
 // splits on whitespace and uses any extra args after the dir
 pub fn ls(arg: &str) -> Vec<String> {
     // use Deque to pop_front
-    let mut args = arg.split(" ").collect::<VecDeque<&str>>();
+    let args = arg.split(" ").collect::<VecDeque<&str>>();
     // get dir to execute ls
-    let dir = args.pop_front().unwrap();
+    // let dir = args.pop_front().unwrap();
     let mut res = vec![];
 
     // start the process
     let mut cmd = Command::new("ls");
     // add args
-    cmd.arg("-p").args(args).current_dir(dir);
+    cmd.arg("-p").arg("-a").args(args);//..current_dir(dir);
 
     // prepare output
     let output = cmd.output().expect("failed to run");
@@ -29,16 +29,16 @@ pub fn ls(arg: &str) -> Vec<String> {
     let lines = res_string.lines();
     // build result vector
     for l in lines {
-        res.push(l.to_string());
+        res.push(l.to_owned());
     }
 
     return res;
 }
 
-pub fn enter_dir(path: String, app: &mut App) -> io::Result<()> {
+pub fn enter_dir(path: String, app: &mut App, args: &str) -> io::Result<()> {
     return match env::set_current_dir(path) {
         Ok(_) => {
-            app.new_cwd();
+            app.new_cwd(args, true);
             return Ok(());
         }
         Err(e) => Err(e),
