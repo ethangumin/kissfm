@@ -1,5 +1,6 @@
 use std::{
     collections::VecDeque,
+    env,
     io,
     process::{exit, Command},
 };
@@ -33,6 +34,13 @@ pub fn ls(arg: &str) -> Vec<String> {
     }
 
     return res;
+}
+
+pub fn enter_dir(path: String) -> io::Result<()> {
+    return match env::set_current_dir(path) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e),
+    };
 }
 
 pub fn enter_file(path: String) -> io::Result<()> {

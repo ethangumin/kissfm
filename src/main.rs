@@ -22,10 +22,10 @@ mod settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // print user conf
-    settings::get_conf();
-    println!("{:?}", commands::ls("./"));
-    println!("{:?}", commands::ls("./ -a"));
-    println!("{:?}", commands::ls("./ -a -l"));
+    // settings::get_conf();
+    // println!("{:?}", commands::ls("./"));
+    // println!("{:?}", commands::ls("./ -a"));
+    // println!("{:?}", commands::ls("./ -a -l"));
 
     // setup terminal
     enable_raw_mode()?;
@@ -67,7 +67,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
-                        return commands::enter_file(new_path);
+                        // return commands::enter_dir(new_path);
+                        commands::enter_dir(new_path);
                     } else {
                         println!("No file/directory currently selected");
                     }
