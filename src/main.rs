@@ -12,9 +12,8 @@ use tui::{
 };
 
 mod commands;
-mod navigation_window;
-mod quick_help;
 mod state;
+mod ui;
 mod utils;
 
 // Files
@@ -54,7 +53,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App,) -> io::Result<()> {
+fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
     let mut hide = true;
     let mut long = false;
     loop {
@@ -73,11 +72,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App,) -> io::Result<
                     } else {
                         app.new_cwd("./", hide)
                     }
-                },
+                }
                 KeyCode::Char('o') => {
                     hide = !hide;
                     app.new_cwd("./", hide)
-                },
+                }
                 KeyCode::Enter => {
                     let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
@@ -106,11 +105,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     // create quick help widget
-    let quick_help_widget = quick_help::generate_content();
+    let quick_help_widget = ui::quick_help();
     f.render_widget(quick_help_widget, layout[0]);
 
     // create navigation window widget
     let state = app.current_files();
-    let nav_window_widget = navigation_window::generate_content(&state);
+    let nav_window_widget = ui::navigation_window(&state);
     f.render_stateful_widget(nav_window_widget, layout[1], &mut app.items.state);
 }
