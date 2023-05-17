@@ -56,6 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App,) -> io::Result<()> {
     let mut hide = true;
+    let mut long = false;
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
@@ -64,6 +65,15 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App,) -> io::Result<
                 KeyCode::Char('q') => return Ok(()),
                 KeyCode::Char('j') => app.items.next(),
                 KeyCode::Char('k') => app.items.previous(),
+                KeyCode::Char('l') => {
+                    hide = false;
+                    long = !long;
+                    if long {
+                        app.new_cwd("./ -l", hide)
+                    } else {
+                        app.new_cwd("./", hide)
+                    }
+                },
                 KeyCode::Char('o') => {
                     hide = !hide;
                     app.new_cwd("./", hide)
