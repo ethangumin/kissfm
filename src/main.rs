@@ -75,6 +75,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 }
                 KeyCode::Char('o') => {
                     hide = !hide;
+                    long = false;
                     app.new_cwd("./", hide)
                 }
                 KeyCode::Enter => {
