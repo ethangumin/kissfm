@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // settings::get_conf();
     // println!("{:?}", commands::ls("./"));
     // println!("{:?}", commands::ls("./ -a"));
-    // println!("{:?}", commands::ls("./ -a -l"));
+    println!("{:?}", commands::ls("-l"));
 
     // setup terminal
     enable_raw_mode()?;
@@ -68,7 +68,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     hide = false;
                     long = !long;
                     if long {
-                        app.new_cwd("./ -l", hide)
+                        app.new_cwd("-l", hide)
                     } else {
                         app.new_cwd("./", hide)
                     }

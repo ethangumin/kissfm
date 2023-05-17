@@ -58,54 +58,46 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        // let mut items = ls("./ -a");
-
-        // // sort by dir -> file, then by name
-        // items.sort_by(|a, b| {
-            // let a_last_char_slash = a.chars().last() == Some('/');
-            // let b_last_char_slash = b.chars().last() == Some('/');
-
-            // if a_last_char_slash && !b_last_char_slash {
-                // std::cmp::Ordering::Less
-            // } else if !a_last_char_slash && b_last_char_slash {
-                // std::cmp::Ordering::Greater
-            // } else {
-                // a.cmp(b)
-            // }
-        // });
-
         let mut a = App {
-            items: StatefulList::with_items(vec![])
+            items: StatefulList::with_items(vec![]),
         };
         a.new_cwd("./", true);
-        return a
+        return a;
     }
 
-    pub fn new_cwd(&mut self, args: &str, hide: bool) {
+    pub fn new_cwd(&mut self, args: &str, hide_dot_files: bool) {
         let files = ls(args);
         let raw_items: Vec<&str> = files.iter().map(|s| s.as_str()).collect();
         let mut items: Vec<String>;
-        if hide {
-            items = raw_items.iter().filter(|&&e| {
-                !e.starts_with(".") || e == "./" || "../" == e
-            }).map(|&e| e.to_string()).collect();
+        if hide_dot_files {
+            items = raw_items
+                .iter()
+                .filter(|&&e| !e.starts_with(".") || e == "./" || e == "../")
+                .map(|&e| e.to_string())
+                .collect();
         } else {
             items = raw_items.iter().map(|&e| e.to_string()).collect();
         }
 
-        // sort by dir -> file, then by name
+        // remove total count when showing permissions
+        if args.contains('l') {
+            items = items[1..].to_vec();
+        }
+
+        // sort dirs before files, then by name
         items.sort_by(|a, b| {
             let a_last_char_slash = a.chars().last() == Some('/');
             let b_last_char_slash = b.chars().last() == Some('/');
 
             if a_last_char_slash && !b_last_char_slash {
                 std::cmp::Ordering::Less
-            } else if !a_last_char_slash && b_last_char_slash {
-                std::cmp::Ordering::Greater
             } else {
-                a.cmp(b)
+                std::cmp::Ordering::Greater
             }
         });
+
+        // ../ before ./
+        items.swap(0, 1);
 
         self.items = StatefulList::with_items(items);
     }
