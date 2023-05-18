@@ -67,3 +67,13 @@ pub fn create_file(path: String) {
     File::create(&path).expect("Failed to create file.");
     enter_file(path).expect("Failed to enter file");
 }
+
+pub fn prev_file(path: String) -> String {
+    let raw = Command::new("cat")
+        .arg(path)
+        .output()
+        .expect("cannot preview file");
+
+    let prev = String::from_utf8_lossy(&raw.stdout);
+    prev.to_string()
+}
