@@ -52,14 +52,26 @@ impl<T> StatefulList<T> {
     }
 }
 
+pub enum InputMode {
+    Normal,
+    Editing,
+}
+
 pub struct App {
+    // files/dirs in nav window
     pub items: StatefulList<String>,
+    // current value of input field
+    pub input: String,
+    // current input mode
+    pub input_mode: InputMode,
 }
 
 impl App {
     pub fn new() -> App {
         let mut a = App {
             items: StatefulList::with_items(vec![]),
+            input: String::new(),
+            input_mode: InputMode::Normal,
         };
         a.new_cwd("./", true);
         return a;

@@ -3,7 +3,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use state::App;
+use state::{App, InputMode};
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
@@ -59,40 +59,64 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         terminal.draw(|f| ui(f, &mut app))?;
 
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => return Ok(()),
-                KeyCode::Char('j') => app.items.next(),
-                KeyCode::Char('k') => app.items.previous(),
-                KeyCode::Char('l') => {
-                    hide = false;
-                    long = !long;
-                    if long {
-                        app.new_cwd("-l", hide)
-                    } else {
+            match app.input_mode {
+                InputMode::Normal => match key.code {
+                    KeyCode::Char('q') => return Ok(()),
+                    KeyCode::Char('j') => app.items.next(),
+                    KeyCode::Char('k') => app.items.previous(),
+                    KeyCode::Char('l') => {
+                        hide = false;
+                        long = !long;
+                        if long {
+                            app.new_cwd("-l", hide)
+                        } else {
+                            app.new_cwd("./", hide)
+                        }
+                    }
+                    KeyCode::Char('o') => {
+                        hide = !hide;
+                        long = false;
                         app.new_cwd("./", hide)
                     }
-                }
-                KeyCode::Char('o') => {
-                    hide = !hide;
-                    long = false;
-                    app.new_cwd("./", hide)
-                }
-                KeyCode::Enter => {
-                    let current_path = utils::get_working_dir();
-                    if let Some(selected_file) = app.items.get_selected() {
-                        let new_path = current_path + "/" + selected_file;
+                    KeyCode::Enter => {
+                        let current_path = utils::get_working_dir();
+                        if let Some(selected_file) = app.items.get_selected() {
+                            let new_path = current_path + "/" + selected_file;
 
-                        if utils::is_dir(selected_file) {
-                            commands::enter_dir(new_path, &mut app, "./")
-                                .expect("failed to enter directory");
+                            if utils::is_dir(selected_file) {
+                                commands::enter_dir(new_path, &mut app, "./")
+                                    .expect("failed to enter directory");
+                            } else {
+                                commands::enter_file(new_path).expect("failed to enter file");
+                            }
                         } else {
-                            commands::enter_file(new_path).expect("failed to enter file");
+                            println!("No file/directory currently selected");
                         }
-                    } else {
-                        println!("No file/directory currently selected");
                     }
-                }
-                _ => {}
+                    KeyCode::Char('%') => {
+                        app.input_mode = InputMode::Editing;
+                    }
+                    _ => {}
+                },
+                InputMode::Editing => match key.code {
+                    KeyCode::Char(c) => {
+                        app.input.push(c);
+                    }
+                    KeyCode::Backspace => {
+                        app.input.pop();
+                    }
+                    KeyCode::Esc => {
+                        app.input_mode = InputMode::Normal;
+                    }
+                    KeyCode::Enter => {
+                        if app.input.len() != 0 {
+                            let current_path = utils::get_working_dir();
+                            let new_file_path = current_path + "/" + &app.input;
+                            commands::create_file(new_file_path);
+                        }
+                    }
+                    _ => {}
+                },
             }
         }
     }
@@ -101,7 +125,14 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+        .constraints(
+            [
+                Constraint::Length(3),
+                Constraint::Min(0),
+                Constraint::Length(3),
+            ]
+            .as_ref(),
+        )
         .split(f.size());
 
     // create quick help widget
@@ -112,4 +143,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let state = app.current_files();
     let nav_window_widget = ui::navigation_window(&state);
     f.render_stateful_widget(nav_window_widget, layout[1], &mut app.items.state);
+
+    // create input field widget
+    let input = &app.input;
+    let input_field_widget = ui::input_field(input);
+    f.render_widget(input_field_widget, layout[2]);
 }

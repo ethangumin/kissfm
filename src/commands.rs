@@ -1,6 +1,8 @@
 use std::{
     collections::VecDeque,
-    env, io,
+    env,
+    fs::File,
+    io,
     process::{exit, Command},
 };
 
@@ -21,7 +23,7 @@ pub fn ls(arg: &str) -> Vec<String> {
     // start the process
     let mut cmd = Command::new("ls");
     // add args
-    cmd.arg("-p").arg("-a").args(args);//..current_dir(dir);
+    cmd.arg("-p").arg("-a").args(args); //..current_dir(dir);
 
     // prepare output
     let output = cmd.output().expect("failed to run");
@@ -59,4 +61,9 @@ pub fn enter_file(path: String) -> io::Result<()> {
 
     disable_raw_mode()?;
     exit(0);
+}
+
+pub fn create_file(path: String) {
+    File::create(&path).expect("Failed to create file.");
+    enter_file(path).expect("Failed to enter file");
 }

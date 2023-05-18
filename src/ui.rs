@@ -52,3 +52,8 @@ pub fn quick_help() -> Paragraph<'static> {
     return Paragraph::new(content)
         .block(Block::default().title("Quick Help").borders(Borders::ALL));
 }
+
+pub fn input_field(input: &String) -> Paragraph {
+    return Paragraph::new(String::from(input))
+        .block(Block::default().borders(Borders::ALL).title("Input"));
+}
