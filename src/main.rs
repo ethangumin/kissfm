@@ -63,8 +63,14 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
             match app.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('q') => return Ok(()),
-                    KeyCode::Char('j') => app.items.next(),
-                    KeyCode::Char('k') => app.items.previous(),
+                    KeyCode::Char('j') => {
+                        app.prev = false;
+                        app.items.next()
+                    }
+                    KeyCode::Char('k') => {
+                        app.prev = false;
+                        app.items.previous()
+                    }
                     KeyCode::Char('p') => {
                     if let Some(selected_file) = app.items.get_selected() {
                         let current_path = utils::get_working_dir();
