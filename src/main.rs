@@ -8,7 +8,7 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    Frame, Terminal, widgets::{Paragraph, Block, Borders, Clear}, text::{Span, Spans},
+    Frame, Terminal, widgets::{Paragraph, Block, Borders, Clear},
 };
 
 mod commands;
@@ -69,7 +69,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     if let Some(selected_file) = app.items.get_selected() {
                         let current_path = utils::get_working_dir();
                         let new_path = current_path + "/" + selected_file;
-                        let preview = commands::prev_file(new_path);
+                        let preview: String;
+                        if selected_file.ends_with("/") {
+                            preview = commands::ls(&new_path).join("\n");
+                        } else {
+                            preview = commands::prev_file(new_path);
+                        }
                         app.prev = !app.prev;
                         app.file_cont = preview;
                     }
