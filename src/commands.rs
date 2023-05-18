@@ -1,7 +1,7 @@
 use std::{
     collections::VecDeque,
     env,
-    fs::File,
+    fs::{self, File},
     io,
     process::{exit, Command},
 };
@@ -66,6 +66,11 @@ pub fn enter_file(path: String) -> io::Result<()> {
 pub fn create_file(path: String) {
     File::create(&path).expect("Failed to create file.");
     enter_file(path).expect("Failed to enter file");
+}
+
+pub fn create_dir(path: String, app: &mut App, hiding_dot_files: bool) {
+    fs::create_dir(path).expect("Failed to create directory.");
+    app.new_cwd("./", hiding_dot_files);
 }
 
 pub fn prev_file(path: String) -> String {

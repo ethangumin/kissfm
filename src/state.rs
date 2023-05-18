@@ -64,6 +64,7 @@ pub struct App {
     pub input: String,
     // current input mode
     pub input_mode: InputMode,
+    pub input_field_title: String,
     pub prev: bool,
     pub file_cont: String,
 }
@@ -74,6 +75,7 @@ impl App {
             items: StatefulList::with_items(vec![]),
             input: String::new(),
             input_mode: InputMode::Normal,
+            input_field_title: String::new(),
             prev: false,
             file_cont: String::from(""),
         };

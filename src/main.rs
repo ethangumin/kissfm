@@ -8,7 +8,8 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    Frame, Terminal, widgets::{Paragraph, Block, Borders, Clear},
+    widgets::{Block, Borders, Clear, Paragraph},
+    Frame, Terminal,
 };
 
 mod commands;
@@ -72,19 +73,19 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         app.items.previous()
                     }
                     KeyCode::Char('p') => {
-                    if let Some(selected_file) = app.items.get_selected() {
-                        let current_path = utils::get_working_dir();
-                        let new_path = current_path + "/" + selected_file;
-                        let preview: String;
-                        if selected_file.ends_with("/") {
-                            preview = commands::ls(&new_path).join("\n");
-                        } else {
-                            preview = commands::prev_file(new_path);
+                        if let Some(selected_file) = app.items.get_selected() {
+                            let current_path = utils::get_working_dir();
+                            let new_path = current_path + "/" + selected_file;
+                            let preview: String;
+                            if selected_file.ends_with("/") {
+                                preview = commands::ls(&new_path).join("\n");
+                            } else {
+                                preview = commands::prev_file(new_path);
+                            }
+                            app.prev = !app.prev;
+                            app.file_cont = preview;
                         }
-                        app.prev = !app.prev;
-                        app.file_cont = preview;
                     }
-                }
                     KeyCode::Char('l') => {
                         hide = false;
                         long = !long;
@@ -116,6 +117,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     }
                     KeyCode::Char('%') => {
                         app.input_mode = InputMode::Editing;
+                        app.input_field_title = String::from("Enter Filename")
+                    }
+                    KeyCode::Char('d') => {
+                        app.input_mode = InputMode::Editing;
+                        app.input_field_title = String::from("Enter Directory Name")
                     }
                     _ => {}
                 },
@@ -133,8 +139,16 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     KeyCode::Enter => {
                         if app.input.len() != 0 {
                             let current_path = utils::get_working_dir();
-                            let new_file_path = current_path + "/" + &app.input;
-                            commands::create_file(new_file_path);
+                            let new_path = current_path + "/" + &app.input;
+                            let title = app.input_field_title.clone();
+
+                            if title == String::from("Enter Filename") {
+                                commands::create_file(new_path);
+                            } else {
+                                commands::create_dir(new_path, &mut app, hide.clone());
+                                app.clear_input();
+                                app.input_mode = InputMode::Normal;
+                            }
                         }
                     }
                     _ => {}
@@ -180,11 +194,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     match input_mode {
         InputMode::Editing => {
             let input = &app.input;
-            let input_field_widget = ui::input_field(input);
+            let input_title = app.input_field_title.clone();
+            let input_field_widget = ui::input_field(input, input_title);
             f.render_widget(input_field_widget, layout[2]);
         }
         _ => {}
     }
+
     if app.prev {
         let block = Paragraph::new(app.file_cont.clone())
             .block(Block::default().borders(Borders::ALL).title(" Preview "))
@@ -194,7 +210,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         f.render_widget(block, area);
     }
 }
-fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) ->tui::layout::Rect {
+
+// preview window
+fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) -> tui::layout::Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
