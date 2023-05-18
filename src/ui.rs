@@ -40,13 +40,22 @@ pub fn navigation_window(files: &Vec<String>) -> List {
 }
 
 pub fn quick_help() -> Paragraph<'static> {
-    let commands = vec!["q"];
-    let titles = vec![":quit"];
+    let commands = vec!["q", "j/k", "%", "d"];
+    let titles = vec![":quit", ":scroll", ":new file", ":new dir"];
 
     let content = Spans::from(vec![
         Span::styled(commands[0], Style::default().fg(Color::Cyan)),
         Span::raw(titles[0].to_string()),
-        Span::raw(" "),
+        Span::raw("  "),
+        Span::styled(commands[1], Style::default().fg(Color::Cyan)),
+        Span::raw(titles[1].to_string()),
+        Span::raw("  "),
+        Span::styled(commands[2], Style::default().fg(Color::Cyan)),
+        Span::raw(titles[2].to_string()),
+        Span::raw("  "),
+        Span::styled(commands[3], Style::default().fg(Color::Cyan)),
+        Span::raw(titles[3].to_string()),
+        Span::raw("  "),
     ]);
 
     return Paragraph::new(content)
