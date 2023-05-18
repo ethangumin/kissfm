@@ -54,12 +54,16 @@ impl<T> StatefulList<T> {
 
 pub struct App {
     pub items: StatefulList<String>,
+    pub prev: bool,
+    pub file_cont: String,
 }
 
 impl App {
     pub fn new() -> App {
         let mut a = App {
             items: StatefulList::with_items(vec![]),
+            prev: false,
+            file_cont: String::from(""),
         };
         a.new_cwd("./", true);
         return a;

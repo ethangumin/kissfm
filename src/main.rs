@@ -8,7 +8,7 @@ use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
-    Frame, Terminal,
+    Frame, Terminal, widgets::{Paragraph, Block, Borders, Clear}, text::{Span, Spans},
 };
 
 mod commands;
@@ -24,6 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // settings::get_conf();
     // println!("{:?}", commands::ls("./"));
     // println!("{:?}", commands::ls("./ -a"));
+    // println!("{}", commands::prev_file(String::from("./Cargo.toml")));
 
     // setup terminal
     enable_raw_mode()?;
@@ -61,10 +62,26 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
         if let Event::Key(key) = event::read()? {
             match key.code {
                 KeyCode::Char('q') => return Ok(()),
-                KeyCode::Char('j') => app.items.next(),
-                KeyCode::Char('k') => app.items.previous(),
+                KeyCode::Char('j') => {
+                    app.prev = false;
+                    app.items.next()
+                }
+                KeyCode::Char('k') => {
+                    app.prev = false;
+                    app.items.previous()
+                }
+                KeyCode::Char('p') => {
+                    if let Some(selected_file) = app.items.get_selected() {
+                        let current_path = utils::get_working_dir();
+                        let new_path = current_path + "/" + selected_file;
+                        let preview = commands::prev_file(new_path);
+                        app.prev = !app.prev;
+                        app.file_cont = preview;
+                    }
+                }
                 KeyCode::Char('l') => {
                     hide = false;
+                    app.prev = false;
                     long = !long;
                     if long {
                         app.new_cwd("-l", hide)
@@ -74,10 +91,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                 }
                 KeyCode::Char('o') => {
                     hide = !hide;
+                    app.prev = false;
                     long = false;
                     app.new_cwd("./", hide)
                 }
                 KeyCode::Enter => {
+                    app.prev = false;
                     let current_path = utils::get_working_dir();
                     if let Some(selected_file) = app.items.get_selected() {
                         let new_path = current_path + "/" + selected_file;
@@ -99,6 +118,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+    let size = f.size();
     let layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
@@ -112,4 +132,38 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let state = app.current_files();
     let nav_window_widget = ui::navigation_window(&state);
     f.render_stateful_widget(nav_window_widget, layout[1], &mut app.items.state);
+
+    if app.prev {
+        let block = Paragraph::new(app.file_cont.clone())
+            .block(Block::default().borders(Borders::ALL).title(" Preview "))
+            .alignment(tui::layout::Alignment::Left);
+        let area = centered_rect(80, 80, size);
+        f.render_widget(Clear, area);
+        f.render_widget(block, area);
+    }
+}
+fn centered_rect(percent_x: u16, percent_y: u16, r: tui::layout::Rect) ->tui::layout::Rect {
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            [
+                Constraint::Percentage((100 - percent_y) / 2),
+                Constraint::Percentage(percent_y),
+                Constraint::Percentage((100 - percent_y) / 2),
+            ]
+            .as_ref(),
+        )
+        .split(r);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(
+            [
+                Constraint::Percentage((100 - percent_x) / 2),
+                Constraint::Percentage(percent_x),
+                Constraint::Percentage((100 - percent_x) / 2),
+            ]
+            .as_ref(),
+        )
+        .split(popup_layout[1])[1]
 }

@@ -60,3 +60,13 @@ pub fn enter_file(path: String) -> io::Result<()> {
     disable_raw_mode()?;
     exit(0);
 }
+
+pub fn prev_file(path: String) -> String {
+    let raw = Command::new("cat")
+        .arg(path)
+        .output()
+        .expect("cannot preview file");
+
+    let prev = String::from_utf8_lossy(&raw.stdout);
+    prev.to_string()
+}
