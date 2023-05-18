@@ -8,7 +8,10 @@ use std::{
 
 use crossterm::terminal::disable_raw_mode;
 
-use crate::{settings, state::App};
+use crate::{
+    settings,
+    state::{App, InputMode},
+};
 
 // takes a string consisting of
 // "dir args..."
@@ -71,6 +74,12 @@ pub fn create_file(path: String) {
 pub fn create_dir(path: String, app: &mut App, hiding_dot_files: bool) {
     fs::create_dir(path).expect("Failed to create directory.");
     app.new_cwd("./", hiding_dot_files);
+    restore_input_field(app);
+}
+
+pub fn restore_input_field(app: &mut App) {
+    app.clear_input();
+    app.input_mode = InputMode::Normal;
 }
 
 pub fn prev_file(path: String) -> String {

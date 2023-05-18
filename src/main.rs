@@ -133,8 +133,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         app.input.pop();
                     }
                     KeyCode::Esc => {
-                        app.clear_input();
-                        app.input_mode = InputMode::Normal;
+                        commands::restore_input_field(&mut app);
                     }
                     KeyCode::Enter => {
                         if app.input.len() != 0 {
@@ -146,8 +145,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                                 commands::create_file(new_path);
                             } else {
                                 commands::create_dir(new_path, &mut app, hide.clone());
-                                app.clear_input();
-                                app.input_mode = InputMode::Normal;
                             }
                         }
                     }
