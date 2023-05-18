@@ -123,16 +123,25 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
 }
 
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+    let input_mode = &app.input_mode;
+    let mut layout_constraints = [
+        Constraint::Length(3),
+        Constraint::Min(0),
+        Constraint::Length(3),
+    ]
+    .to_vec();
+
+    match input_mode {
+        // hide input bar if in normal mode
+        InputMode::Normal => {
+            layout_constraints.pop();
+        }
+        _ => {}
+    }
+
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            [
-                Constraint::Length(3),
-                Constraint::Min(0),
-                Constraint::Length(3),
-            ]
-            .as_ref(),
-        )
+        .constraints(layout_constraints.as_ref())
         .split(f.size());
 
     // create quick help widget
@@ -145,7 +154,12 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     f.render_stateful_widget(nav_window_widget, layout[1], &mut app.items.state);
 
     // create input field widget
-    let input = &app.input;
-    let input_field_widget = ui::input_field(input);
-    f.render_widget(input_field_widget, layout[2]);
+    match input_mode {
+        InputMode::Editing => {
+            let input = &app.input;
+            let input_field_widget = ui::input_field(input);
+            f.render_widget(input_field_widget, layout[2]);
+        }
+        _ => {}
+    }
 }
