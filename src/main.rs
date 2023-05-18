@@ -106,6 +106,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         app.input.pop();
                     }
                     KeyCode::Esc => {
+                        app.clear_input();
                         app.input_mode = InputMode::Normal;
                     }
                     KeyCode::Enter => {

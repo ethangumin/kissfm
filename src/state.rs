@@ -117,4 +117,8 @@ impl App {
     pub fn current_files(&self) -> Vec<String> {
         return self.items.items.clone();
     }
+
+    pub fn clear_input(&mut self) -> () {
+        self.input = String::new();
+    }
 }
