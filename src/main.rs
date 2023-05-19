@@ -78,7 +78,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                         app.prev = false;
                         app.items.previous()
                     }
-                    KeyCode::Char('p') => {
+                    KeyCode::Char(' ') => {
                         if let Some(selected_file) = app.items.get_selected() {
                             let current_path = utils::get_working_dir();
                             let new_path = current_path + "/" + selected_file;
