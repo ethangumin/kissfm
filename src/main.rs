@@ -64,6 +64,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
             match app.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('q') => return Ok(()),
+                    KeyCode::Backspace => {
+                        let current_path = utils::get_working_dir();
+                        let new_path = current_path + "/" + "../";
+                        commands::enter_dir(new_path, &mut app, "./")
+                            .expect("failed to enter directory");
+                    }
                     KeyCode::Char('j') => {
                         app.prev = false;
                         app.items.next()
