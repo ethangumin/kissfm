@@ -11,12 +11,16 @@ pub fn get_conf() -> HashMap<String, String> {
 
     let path = Path::new("").join(home).join(".config/kfm.toml");
 
-    let settings = Config::builder()
+    let conf = Config::builder()
         .add_source(config::File::with_name(path.to_str().unwrap()))
-        .build()
-        .unwrap()
-        .try_deserialize::<HashMap<String, String>>()
-        .unwrap();
+        .build();
+
+    let settings = match conf {
+        Err(_) => HashMap::<String, String>::new(),
+        Ok(s) => {
+            s.try_deserialize::<HashMap<String, String>>().unwrap()
+        },
+    };
 
     return settings;
 }
