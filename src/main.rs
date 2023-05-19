@@ -102,6 +102,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     }
                     KeyCode::Enter => {
                         let current_path = utils::get_working_dir();
+                        hide = true;
+                        long = false;
+
                         if let Some(selected_file) = app.items.get_selected() {
                             let new_path = current_path + "/" + selected_file;
 
