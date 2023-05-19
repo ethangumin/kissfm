@@ -1,7 +1,7 @@
 use std::{
     collections::VecDeque,
     env,
-    fs::{self, File},
+    fs::File,
     io,
     process::{exit, Command},
 };
@@ -72,7 +72,7 @@ pub fn create_file(path: String) {
 }
 
 pub fn create_dir(path: String, app: &mut App, hiding_dot_files: bool) {
-    fs::create_dir(path).expect("Failed to create directory.");
+    Command::new("mkdir").arg("-p").arg(path).status().expect("Failed to create directory.");
     app.new_cwd("./", hiding_dot_files);
     restore_input_field(app);
 }
