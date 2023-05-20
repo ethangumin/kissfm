@@ -11,6 +11,7 @@ use crossterm::terminal::disable_raw_mode;
 use crate::{
     settings,
     state::{App, InputMode},
+    utils,
 };
 
 // takes a string consisting of
@@ -72,7 +73,11 @@ pub fn create_file(path: String) {
 }
 
 pub fn create_dir(path: String, app: &mut App, hiding_dot_files: bool) {
-    Command::new("mkdir").arg("-p").arg(path).status().expect("Failed to create directory.");
+    Command::new("mkdir")
+        .arg("-p")
+        .arg(path)
+        .status()
+        .expect("Failed to create directory.");
     app.new_cwd("./", hiding_dot_files);
     restore_input_field(app);
 }
@@ -90,4 +95,21 @@ pub fn prev_file(path: String) -> String {
 
     let prev = String::from_utf8_lossy(&raw.stdout);
     prev.to_string()
+}
+
+pub fn delete(path: String, app: &mut App, hiding_dot_files: bool) {
+    if !utils::is_dir(&path) {
+        Command::new("rm")
+            .arg(path)
+            .status()
+            .expect("Failed to delete file.")
+    } else {
+        Command::new("rm")
+            .arg("-rf")
+            .arg(path)
+            .status()
+            .expect("Failed to delete directory.")
+    };
+    app.new_cwd("./", hiding_dot_files);
+    restore_input_field(app);
 }

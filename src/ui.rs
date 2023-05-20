@@ -40,7 +40,7 @@ pub fn navigation_window(files: &Vec<String>) -> List {
 }
 
 pub fn quick_help() -> Paragraph<'static> {
-    let commands = vec!["q", "j/k", "%", "d", "backspace", "space"];
+    let commands = vec!["q", "j/k", "%", "d", "backspace", "space", "D"];
     let titles = vec![
         ":quit",
         ":scroll",
@@ -48,6 +48,7 @@ pub fn quick_help() -> Paragraph<'static> {
         ":new dir",
         ":../",
         ":preview",
+        ":delete",
     ];
     let mut content = vec![];
 
@@ -66,4 +67,12 @@ pub fn quick_help() -> Paragraph<'static> {
 pub fn input_field(input: &String, input_title: String) -> Paragraph {
     return Paragraph::new(String::from(input))
         .block(Block::default().borders(Borders::ALL).title(input_title));
+}
+
+pub fn delete_prompt(prompt: &String) -> Paragraph {
+    let styled_prompt = Spans::from(vec![
+        Span::styled(prompt, Style::default().fg(Color::LightRed)),
+        Span::raw(" [y/n]"),
+    ]);
+    return Paragraph::new(styled_prompt).block(Block::default());
 }
