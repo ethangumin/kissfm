@@ -64,12 +64,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
             match app.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('q') => return Ok(()),
-                    KeyCode::Backspace => {
-                        let current_path = utils::get_working_dir();
-                        let new_path = current_path + "/" + "../";
-                        commands::enter_dir(new_path, &mut app, "./")
-                            .expect("failed to enter directory");
-                    }
                     KeyCode::Char('j') => {
                         app.prev = false;
                         app.items.next()
@@ -77,6 +71,23 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     KeyCode::Char('k') => {
                         app.prev = false;
                         app.items.previous()
+                    }
+                    KeyCode::Char('t') => {
+                        if let Some(selected_file) = app.items.get_selected() {
+                            let current_path = utils::get_working_dir();
+                            let new_path = current_path.clone() + "/" + selected_file;
+                            if selected_file.ends_with("/") {
+                                commands::tmux(new_path);
+                            } else {
+                                commands::tmux(current_path);
+                            }
+                        }
+                    }
+                    KeyCode::Backspace => {
+                        let current_path = utils::get_working_dir();
+                        let new_path = current_path + "/" + "../";
+                        commands::enter_dir(new_path, &mut app, "./")
+                            .expect("failed to enter directory");
                     }
                     KeyCode::Char(' ') => {
                         if let Some(selected_file) = app.items.get_selected() {

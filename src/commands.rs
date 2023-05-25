@@ -91,3 +91,20 @@ pub fn prev_file(path: String) -> String {
     let prev = String::from_utf8_lossy(&raw.stdout);
     prev.to_string()
 }
+
+pub fn tmux(path: String) {
+    match Command::new("tmux")
+        .arg("new-window")
+        .arg("-c")
+        .arg(path.as_str())
+        .output() {
+            Err(_) => {
+                disable_raw_mode().expect("can't disable");
+                exit(0)
+            },
+            Ok(_) => {
+                disable_raw_mode().expect("can't disable");
+                exit(0)
+            },
+        };
+}
