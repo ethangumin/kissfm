@@ -55,6 +55,7 @@ impl<T> StatefulList<T> {
 pub enum InputMode {
     Normal,
     Editing,
+    Deleting,
 }
 
 pub struct App {

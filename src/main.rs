@@ -77,9 +77,9 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                             let current_path = utils::get_working_dir();
                             let new_path = current_path.clone() + "/" + selected_file;
                             if selected_file.ends_with("/") {
-                                commands::tmux(new_path);
+                                return commands::tmux(new_path);
                             } else {
-                                commands::tmux(current_path);
+                                return commands::tmux(current_path);
                             }
                         }
                     }
@@ -137,11 +137,25 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     }
                     KeyCode::Char('%') => {
                         app.input_mode = InputMode::Editing;
-                        app.input_field_title = String::from("Enter Filename")
+                        app.input_field_title = String::from("Enter Filename");
                     }
                     KeyCode::Char('d') => {
                         app.input_mode = InputMode::Editing;
-                        app.input_field_title = String::from("Enter Directory Name")
+                        app.input_field_title = String::from("Enter Directory Name");
+                    }
+                    KeyCode::Char('D') => {
+                        if let Some(selected_file) = app.items.get_selected() {
+                            if selected_file != "./" && selected_file != "../" {
+                                app.input_mode = InputMode::Deleting;
+
+                                let current_path = utils::get_working_dir();
+                                let deletion_path = current_path + "/" + selected_file;
+                                let title = "Confirm deletion of ".to_string() + &deletion_path;
+                                app.input_field_title = title;
+                            }
+                        } else {
+                            println!("No file/directory currently selected");
+                        }
                     }
                     _ => {}
                 },
@@ -170,6 +184,21 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
                     }
                     _ => {}
                 },
+                InputMode::Deleting => match key.code {
+                    KeyCode::Char('y') => {
+                        let path = utils::get_working_dir();
+                        if let Some(selected) = app.items.get_selected() {
+                            let delete_path = path + "/" + selected;
+                            commands::delete(delete_path, &mut app, hide.clone())
+                        } else {
+                            println!("No file/directory currently selected");
+                        }
+                    }
+                    KeyCode::Char('n') => {
+                        commands::restore_input_field(&mut app);
+                    }
+                    _ => {}
+                },
             }
         }
     }
@@ -189,7 +218,10 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         InputMode::Normal => {
             layout_constraints.pop();
         }
-        _ => {}
+        InputMode::Deleting => {
+            layout_constraints[2] = Constraint::Length(1);
+        }
+        InputMode::Editing => {}
     }
 
     let size = f.size();
@@ -209,13 +241,18 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
     // create input field widget
     match input_mode {
+        InputMode::Normal => {}
+        InputMode::Deleting => {
+            let prompt = app.input_field_title.clone();
+            let delete_prompt_widget = ui::delete_prompt(&prompt);
+            f.render_widget(delete_prompt_widget, layout[2]);
+        }
         InputMode::Editing => {
             let input = &app.input;
             let input_title = app.input_field_title.clone();
             let input_field_widget = ui::input_field(input, input_title);
             f.render_widget(input_field_widget, layout[2]);
         }
-        _ => {}
     }
 
     if app.prev {

@@ -97,21 +97,23 @@ pub fn prev_file(path: String) -> String {
     prev.to_string()
 }
 
-pub fn tmux(path: String) -> io::Result<()> {
+<<<<<<< HEAD
+pub fn tmux(path: String) {
     match Command::new("tmux")
         .arg("new-window")
         .arg("-c")
         .arg(path.as_str())
         .output() {
-            Err(e) => {
-                return Err(e);
+            Err(_) => {
+                disable_raw_mode().expect("can't disable");
+                exit(0)
             },
             Ok(_) => {
-                return Ok(());
+                disable_raw_mode().expect("can't disable");
+                exit(0)
             },
         };
-}
-
+=======
 pub fn delete(path: String, app: &mut App, hiding_dot_files: bool) {
     if !utils::is_dir(&path) {
         Command::new("rm")
@@ -127,4 +129,5 @@ pub fn delete(path: String, app: &mut App, hiding_dot_files: bool) {
     };
     app.new_cwd("./", hiding_dot_files);
     restore_input_field(app);
+>>>>>>> refs/remotes/origin/main
 }
