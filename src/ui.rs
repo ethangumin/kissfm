@@ -40,7 +40,7 @@ pub fn navigation_window(files: &Vec<String>) -> List {
 }
 
 pub fn quick_help() -> Paragraph<'static> {
-    let commands = vec!["q", "j/k", "%", "d", "backspace", "space", "D"];
+    let commands = vec!["q", "j/k", "%", "d", "backspace", "space", "D", "t"];
     let titles = vec![
         ":quit",
         ":scroll",
@@ -49,6 +49,7 @@ pub fn quick_help() -> Paragraph<'static> {
         ":../",
         ":preview",
         ":delete",
+        ":Tmux",
     ];
     let mut content = vec![];
 
