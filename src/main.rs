@@ -21,12 +21,6 @@ mod utils;
 mod settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // print user conf
-    // settings::get_conf();
-    // println!("{:?}", commands::ls("./"));
-    // println!("{:?}", commands::ls("./ -a"));
-    // println!("{}", commands::prev_file(String::from("./Cargo.toml")));
-
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
